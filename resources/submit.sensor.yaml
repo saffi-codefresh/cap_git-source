@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: submit
+spec:
+  template:
+    serviceAccountName: argo-server
+  eventBusName: codefresh-eventbus
+  dependencies:
+    - name: git-push
+      eventSourceName: github
+      eventName: push
+    - name: git-push-2
+      eventSourceName: github-another
+      eventName: push
+  triggers:
+    - template:
+        conditions: "git-push"
+        name: trigger-namespace
+        argoWorkflow:
+          group: argoproj.io
+          version: v1alpha1
+          resource: workflows
+          operation: submit
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: submit-namespaced-
+              spec:
+                workflowTemplateRef:
+                  # using template from sensor's namespace local-cf-10
+                  name: whalesay
+    - template:
+        conditions: "git-push"
+        name: trigger-cluster
+        argoWorkflow:
+          group: argoproj.io
+          version: v1alpha1
+          resource: workflows
+          operation: submit
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: submit-cluster-
+              spec:
+                workflowTemplateRef:
+                  clusterScope: true
+                  name: whalesay-cluster

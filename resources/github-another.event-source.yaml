@@ -1,0 +1,36 @@
+# Info on GitHub Webhook: https://developer.github.com/v3/repos/hooks/#create-a-hook
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: github-another
+spec:
+  eventBusName: codefresh-eventbus
+  service:
+    ports:
+      - port: 12000
+        targetPort: 12000
+  github:
+    push:
+      owner: saffi-codefresh
+      repository: argo
+      webhook:
+        endpoint: /
+        port: "12000"
+        method: POST
+        url:  http://1c52-2-55-57-157.ngrok.io
+      # https://developer.github.com/v3/activity/events/types/
+      events:
+        - "push"
+
+      # secret
+      apiToken:
+        name: github-access
+        key: token
+
+      # type of the connection between event-source and Github.
+      # You should set it to false to avoid man-in-the-middle and other attacks.
+      insecure: true
+      # Determines if notifications are sent when the webhook is triggered
+      active: true
+      # The media type used to serialize the payloads
+      contentType: json
